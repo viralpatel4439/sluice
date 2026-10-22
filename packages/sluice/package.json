@@ -1,0 +1,96 @@
+{
+  "name": "@viralpatel4439/sluice",
+  "version": "0.0.0",
+  "description": "Release bursts to downstream services only as fast as they can take them. Distributed capacity engine for Node.js.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viralpatel4439/sluice.git",
+    "directory": "packages/sluice"
+  },
+  "keywords": [
+    "backpressure",
+    "rate-limit",
+    "concurrency",
+    "capacity",
+    "redis",
+    "distributed",
+    "fetch",
+    "queue"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": ["./dist/register.js", "./dist/register.cjs"],
+  "files": ["dist", "lua", "README.md"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "import": "./dist/register.js",
+      "require": "./dist/register.cjs"
+    },
+    "./redis": {
+      "types": "./dist/redis/index.d.ts",
+      "import": "./dist/redis/index.js",
+      "require": "./dist/redis/index.cjs"
+    },
+    "./remote": {
+      "types": "./dist/remote/index.d.ts",
+      "import": "./dist/remote/index.js",
+      "require": "./dist/remote/index.cjs"
+    },
+    "./prometheus": {
+      "types": "./dist/prometheus.d.ts",
+      "import": "./dist/prometheus.js",
+      "require": "./dist/prometheus.cjs"
+    },
+    "./otel": {
+      "types": "./dist/otel.d.ts",
+      "import": "./dist/otel.js",
+      "require": "./dist/otel.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "node scripts/gen-proto.mjs && tsup"
+  },
+  "peerDependencies": {
+    "@grpc/grpc-js": "^1.10.0",
+    "@opentelemetry/api": "^1.8.0",
+    "ioredis": "^5.4.0",
+    "protobufjs": "^7.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@grpc/grpc-js": {
+      "optional": true
+    },
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@grpc/grpc-js": "^1.14.6",
+    "@opentelemetry/api": "1.9",
+    "@opentelemetry/context-async-hooks": "^2.12.0",
+    "@opentelemetry/sdk-metrics": "^2.12.0",
+    "@opentelemetry/sdk-trace-base": "^2.12.0",
+    "@testcontainers/toxiproxy": "^10.28.0",
+    "axios": "^1.20.0",
+    "ioredis": "^5.11.1",
+    "protobufjs": "^7.6.6",
+    "redis": "^5.12.1",
+    "testcontainers": "^10.28.0"
+  }
+}

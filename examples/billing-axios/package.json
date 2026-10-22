@@ -1,0 +1,8 @@
+{
+  "name": "example-billing-axios",
+  "private": true,
+  "type": "module",
+  "description": "Unmodified caller using axios (http.Agent). sluice is attached with --import, no code change.",
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "@viralpatel4439/sluice": "0.0.0", "axios": "^1.7.0" }
+}

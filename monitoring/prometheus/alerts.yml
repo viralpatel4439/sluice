@@ -1,0 +1,46 @@
+# Each alert links to a runbook in docs/runbooks/.
+groups:
+  - name: sluice
+    rules:
+      - alert: SluiceFallbackActive
+        expr: max by (namespace, target) (sluice_fallback_active) == 1
+        for: 1m
+        labels: { severity: page }
+        annotations:
+          summary: "sluice lost coordination for {{ $labels.target }}"
+          runbook: docs/runbooks/fallback.md
+      - alert: SluiceBacklogGrowing
+        expr: deriv(sluice_pool_backlog[10m]) > 0 and sluice_pool_backlog > 1000
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Backlog for {{ $labels.target }} keeps growing; the target may need more capacity"
+          runbook: docs/runbooks/backlog.md
+      - alert: SluiceCircuitOpen
+        expr: max by (namespace, target) (sluice_circuit_open) == 1
+        for: 2m
+        labels: { severity: page }
+        annotations:
+          summary: "{{ $labels.target }} is unreachable (circuit open)"
+          runbook: docs/runbooks/circuit-open.md
+      - alert: SluiceQueueWaitHigh
+        expr: histogram_quantile(0.99, sum by (le, target) (rate(sluice_queue_wait_seconds_bucket[5m]))) > 60
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: "p99 wait for {{ $labels.target }} is above 60s"
+          runbook: docs/runbooks/backlog.md
+      - alert: SluiceDeadItems
+        expr: sum by (target) (rate(sluice_items_dead_total[5m])) > 0
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Items to {{ $labels.target }} are exhausting their retries"
+          runbook: docs/runbooks/dead-items.md
+      - alert: SluiceCapacityPinned
+        expr: sluice_pool_override == 1
+        for: 6h
+        labels: { severity: info }
+        annotations:
+          summary: "Capacity for {{ $labels.target }} has been pinned by an operator for 6h"
+          runbook: docs/runbooks/override.md

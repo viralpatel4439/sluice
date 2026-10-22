@@ -1,0 +1,145 @@
+// sluice coordination protocol v1.
+// One bidirectional stream per engine instance carries every pool (target) it uses.
+// Tokens are permissions for one in-flight request at a target; payloads never pass through here.
+syntax = "proto3";
+
+package sluice.v1;
+
+service Coordinator {
+  rpc Session(stream ClientMessage) returns (stream ServerMessage);
+}
+
+message ClientMessage {
+  oneof msg {
+    Hello hello = 1;
+    Join join = 2;
+    Demand demand = 3;
+    Release release = 4;
+    Report report = 5;
+    SetCapacity set_capacity = 6;
+    Leave leave = 7;
+    Ping ping = 8;
+  }
+}
+
+// First message on every stream.
+message Hello {
+  string instance_id = 1;
+  string caller = 2;
+  uint32 protocol = 3;
+}
+
+message Join {
+  uint64 req = 1;
+  string pool = 2;
+  string caller = 3;
+  double weight = 4;
+  // Capacity to seed the pool with if it does not exist yet.
+  uint32 capacity = 5;
+  // Tokens still in use from before a reconnect.
+  uint32 held = 6;
+}
+
+// Ask for up to `want` tokens beyond those held. 0 withdraws.
+message Demand {
+  string pool = 1;
+  uint32 want = 2;
+  // 0 = critical, 1 = standard, 2 = bulk.
+  uint32 rank = 3;
+  uint32 backlog = 4;
+}
+
+message Release {
+  string pool = 1;
+  uint32 n = 2;
+}
+
+message Report {
+  string pool = 1;
+  uint32 held = 2;
+  uint32 in_flight = 3;
+  uint32 backlog = 4;
+}
+
+message SetCapacity {
+  string pool = 1;
+  uint32 capacity = 2;
+}
+
+message Leave {
+  uint64 req = 1;
+  string pool = 2;
+}
+
+message Ping {
+  uint64 at = 1;
+}
+
+message ServerMessage {
+  oneof msg {
+    Welcome welcome = 1;
+    Joined joined = 2;
+    Grant grant = 3;
+    State state = 4;
+    Fenced fenced = 5;
+    Restored restored = 6;
+    Pong pong = 7;
+    Error error = 8;
+    Left left = 9;
+  }
+}
+
+message PoolState {
+  uint32 capacity = 1;
+  bool contended = 2;
+  uint32 fair_share = 3;
+  // True when this instance should read target capacity and run AIMD.
+  bool owner = 4;
+  uint32 instances = 5;
+}
+
+message Welcome {
+  string server_id = 1;
+  uint32 protocol = 2;
+  uint32 lease_ms = 3;
+}
+
+message Joined {
+  uint64 req = 1;
+  string pool = 2;
+  PoolState state = 3;
+  string error = 4;
+}
+
+message Grant {
+  string pool = 1;
+  uint32 n = 2;
+}
+
+message State {
+  string pool = 1;
+  PoolState state = 2;
+}
+
+// The server lost Redis: stop using held tokens; use `fallback` as a local limit.
+message Fenced {
+  string pool = 1;
+  uint32 fallback = 2;
+}
+
+message Restored {
+  string pool = 1;
+}
+
+message Pong {
+  uint64 at = 1;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+}
+
+message Left {
+  uint64 req = 1;
+}

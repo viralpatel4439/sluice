@@ -1,0 +1,100 @@
+# Local stack.
+#   docker compose up                 → Redis + sluice-server (control panel on :8080)
+#   docker compose --profile demo up  → plus a 3-replica target behind nginx, two unmodified
+#                                       caller services (fetch and axios, 3 replicas each),
+#                                       Prometheus (:9090) and Grafana (:3001)
+name: sluice
+
+x-caller: &caller
+  build: { context: ., target: examples }
+  profiles: [demo]
+  depends_on: [sluice-server, target]
+  restart: unless-stopped
+  environment: &caller-env
+    NODE_OPTIONS: --import @viralpatel4439/sluice/register
+    SLUICE_SERVER_URL: sluice-server:7070
+    SLUICE_NAMESPACE: demo
+    SLUICE_METRICS_PORT: "9464"
+    SLUICE_LOG_LEVEL: info
+    TARGET_URL: http://target/records
+
+x-target: &target
+  build: { context: ., target: examples }
+  profiles: [demo]
+  command: ["node", "examples/target-service/server.js"]
+  depends_on: [redis]
+  environment:
+    TOTAL_CAPACITY: "20"
+    LATENCY_MS: "60"
+    DEMO_REDIS_URL: redis://redis:6379/1
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  sluice-server:
+    build: { context: ., target: server }
+    image: sluice-server:dev
+    depends_on:
+      redis: { condition: service_healthy }
+    environment:
+      SLUICE_REDIS_URL: redis://redis:6379
+      SLUICE_ADMIN_TOKEN: ${SLUICE_ADMIN_TOKEN:-change-me}
+      SLUICE_LOG_LEVEL: info
+    ports:
+      - "7070:7070"   # gRPC for engines
+      - "8080:8080"   # control panel, /api, /metrics
+
+  target-1: *target
+  target-2: *target
+  target-3: *target
+  target:
+    image: nginx:1.27-alpine
+    profiles: [demo]
+    depends_on: [target-1, target-2, target-3]
+    volumes: ["./deploy/nginx/target-lb.conf:/etc/nginx/conf.d/default.conf:ro"]
+    ports: ["3000:80"]
+
+  orders:
+    <<: *caller
+    command: ["node", "examples/orders-fetch/index.js"]
+    environment:
+      <<: *caller-env
+      SLUICE_CALLER: orders
+      SLUICE_WEIGHT: "3"
+    deploy: { replicas: 3 }
+
+  billing:
+    <<: *caller
+    command: ["node", "examples/billing-axios/index.js"]
+    environment:
+      <<: *caller-env
+      SLUICE_CALLER: billing
+      SLUICE_WEIGHT: "1"
+    deploy: { replicas: 3 }
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    profiles: [demo]
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    profiles: [demo]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3001:3000"]

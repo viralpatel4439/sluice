@@ -1,0 +1,16 @@
+name: Bug report
+description: Something does not behave as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What happened, description: "What you expected, what you saw, and how often." }
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes: { label: How to reproduce, description: "Minimal code or config. Mode: single instance, Redis, or sluice-server?" }
+    validations: { required: true }
+  - type: input
+    id: versions
+    attributes: { label: Versions, description: "sluice, sluice-server, Node.js, Redis/Valkey" }
+    validations: { required: true }

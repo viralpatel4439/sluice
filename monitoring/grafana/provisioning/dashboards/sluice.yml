@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: sluice
+    folder: sluice
+    type: file
+    options: { path: /var/lib/grafana/dashboards }

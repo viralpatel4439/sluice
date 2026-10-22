@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@viralpatel4439/sluice": ["../sluice/src/index.ts"],
+      "@viralpatel4439/sluice/*": ["../sluice/src/*/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
+}

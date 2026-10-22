@@ -1,0 +1,8 @@
+{
+  "name": "example-data-migration",
+  "private": true,
+  "type": "module",
+  "description": "Explicit API: migrate rows to a target with priorities, retries and graceful drain.",
+  "scripts": { "start": "node index.js" },
+  "dependencies": { "@viralpatel4439/sluice": "0.0.0" }
+}

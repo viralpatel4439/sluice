@@ -1,0 +1,36 @@
+{
+  "name": "@viralpatel4439/sluice-server",
+  "version": "0.0.0",
+  "description": "sluice coordination server: gRPC sessions for sluice engines, control panel, Prometheus metrics.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viralpatel4439/sluice.git",
+    "directory": "packages/server"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "sluice-server": "./dist/main.js"
+  },
+  "files": ["dist", "README.md"],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.0",
+    "@viralpatel4439/sluice": "0.0.0",
+    "ioredis": "^5.4.0",
+    "protobufjs": "^7.2.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}

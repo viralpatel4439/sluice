@@ -1,0 +1,9 @@
+apiVersion: v2
+name: sluice-server
+description: sluice coordination server (gRPC for engines, control panel, Prometheus metrics). Needs Redis.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/viralpatel4439/sluice
+sources: [https://github.com/viralpatel4439/sluice]
+license: Apache-2.0

@@ -1,0 +1,8 @@
+{
+  "name": "example-target-service",
+  "private": true,
+  "type": "module",
+  "description": "Demo downstream service B. Records true fleet-wide concurrency in Redis so the demo can prove sluice keeps it at or below N.",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ioredis": "^5.4.0" }
+}

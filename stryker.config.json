@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "vitest.unit.config.ts"
+  },
+  "coverageAnalysis": "perTest",
+  "mutate": [
+    "packages/sluice/src/core/queue.ts",
+    "packages/sluice/src/core/retry.ts",
+    "packages/sluice/src/core/deque.ts",
+    "packages/sluice/src/core/timers.ts",
+    "packages/sluice/src/core/circuit.ts",
+    "packages/sluice/src/core/coordinator.ts",
+    "packages/sluice/src/core/target.ts"
+  ],
+  "ignoreStatic": true,
+  "concurrency": 6,
+  "timeoutMS": 30000,
+  "reporters": ["clear-text", "progress", "html", "json"],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "thresholds": {
+    "high": 85,
+    "low": 75,
+    "break": 75
+  },
+  "tempDirName": ".stryker-tmp",
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json"
+}

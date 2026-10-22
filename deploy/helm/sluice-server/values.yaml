@@ -1,0 +1,58 @@
+replicaCount: 2
+
+image:
+  # Build it from this repo (docker build --target server) and push it to your own registry.
+  repository: sluice-server
+  tag: ""          # defaults to the chart appVersion
+  pullPolicy: IfNotPresent
+
+# Redis that holds the token pools. Use a dedicated instance or DB with maxmemory-policy noeviction.
+redis:
+  url: redis://redis:6379
+  # Or read the URL from an existing secret (key "url").
+  existingSecret: ""
+
+# Bearer tokens for engines: "caller:token,caller2:token2" or a single shared token.
+# Read from an existing secret (key "tokens") in production.
+auth:
+  existingSecret: ""
+  tokens: ""
+  # Required for control-panel actions (pin capacity, pause). Key "adminToken" in the secret.
+  adminToken: ""
+  # Optional: required for read access to the panel/API when set. Key "viewToken".
+  viewToken: ""
+
+lease:
+  ms: 6000
+  renewMs: 2000
+
+logLevel: info
+extraEnv: []
+
+service:
+  type: ClusterIP
+  grpcPort: 7070
+  httpPort: 8080
+
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { memory: 256Mi }
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+serviceMonitor:
+  enabled: false
+  interval: 15s
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities: { drop: [ALL] }
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

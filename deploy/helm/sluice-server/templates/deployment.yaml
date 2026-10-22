@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sluice.fullname" . }}
+  labels: {{- include "sluice.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "sluice.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "sluice.selector" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: server
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - { name: grpc, containerPort: 7070 }
+            - { name: http, containerPort: 8080 }
+          env:
+            {{- if .Values.redis.existingSecret }}
+            - name: SLUICE_REDIS_URL
+              valueFrom: { secretKeyRef: { name: {{ .Values.redis.existingSecret }}, key: url } }
+            {{- else }}
+            - { name: SLUICE_REDIS_URL, value: {{ .Values.redis.url | quote }} }
+            {{- end }}
+            - name: SLUICE_TOKENS
+              valueFrom: { secretKeyRef: { name: {{ include "sluice.secretName" . }}, key: tokens, optional: true } }
+            - name: SLUICE_ADMIN_TOKEN
+              valueFrom: { secretKeyRef: { name: {{ include "sluice.secretName" . }}, key: adminToken, optional: true } }
+            - name: SLUICE_VIEW_TOKEN
+              valueFrom: { secretKeyRef: { name: {{ include "sluice.secretName" . }}, key: viewToken, optional: true } }
+            - { name: SLUICE_LEASE_MS, value: {{ .Values.lease.ms | quote }} }
+            - { name: SLUICE_RENEW_MS, value: {{ .Values.lease.renewMs | quote }} }
+            - { name: SLUICE_LOG_LEVEL, value: {{ .Values.logLevel | quote }} }
+            - name: SLUICE_SERVER_ID
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            {{- with .Values.extraEnv }}{{ toYaml . | nindent 12 }}{{- end }}
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "files": {
+    "ignore": [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/coverage/**",
+      "monitoring/grafana/dashboards/**",
+      "**/proto-text.ts",
+      "**/.stryker-tmp/**",
+      "**/reports/**",
+      "site/dist/**",
+      "site/.astro/**",
+      "site/src/content/docs/**",
+      "packages/sluice/api/.*.api-extractor.json"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 110
+  },
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "style": {
+        "noNonNullAssertion": "off"
+      }
+    }
+  }
+}

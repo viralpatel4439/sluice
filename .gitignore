@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.DS_Store
+reports/
+.stryker-tmp/
+packages/sluice/api/.tmp/
+packages/sluice/api/.*.api-extractor.json
+site/src/content/docs/
+site/dist/
+site/.astro/
+.claude/
